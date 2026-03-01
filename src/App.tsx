@@ -513,7 +513,7 @@ function App() {
             <div className="retro-ticker" aria-hidden="true">
               <span>
                 DYOR // NO GUARANTEES // MALICIOUS TOKENS EXIST // CHECK
-                RECIPIENTS TWICE //
+                RECIPIENTS TWICE // CUDAN IS GHEI //
               </span>
             </div>
           </div>
