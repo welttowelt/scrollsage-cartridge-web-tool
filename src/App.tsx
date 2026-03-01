@@ -15,7 +15,6 @@ type TransferFormState = {
   tokenAddress: string;
   recipient: string;
   amount: string;
-  decimals: string;
 };
 
 const STRK_TOKEN_ADDRESS =
@@ -29,13 +28,13 @@ const TOKENS = [
 ] as const;
 
 const CUSTOM_TOKEN_KEY = "CUSTOM";
+const DEFAULT_TOKEN_DECIMALS = 18;
 
 const TRANSFER_FORM_DEFAULTS: TransferFormState = {
   selectedToken: "STRK",
   tokenAddress: STRK_TOKEN_ADDRESS,
   recipient: "",
   amount: "",
-  decimals: "18",
 };
 
 const HEX_ADDRESS_PATTERN = /^0x[a-fA-F0-9]{1,64}$/;
@@ -55,7 +54,7 @@ function normalizeAddress(value: string): `0x${string}` {
   return normalized as `0x${string}`;
 }
 
-function parseAmountToUnits(amountInput: string, decimalsInput: string): bigint {
+function parseAmountToUnits(amountInput: string, decimals: number): bigint {
   const amount = amountInput.trim();
   if (!amount) {
     throw new Error("Amount is required.");
@@ -64,10 +63,6 @@ function parseAmountToUnits(amountInput: string, decimalsInput: string): bigint 
     throw new Error("Amount must be a valid number.");
   }
 
-  if (!/^\d+$/.test(decimalsInput.trim())) {
-    throw new Error("Decimals must be a whole number.");
-  }
-  const decimals = Number(decimalsInput);
   if (!Number.isInteger(decimals) || decimals < 0 || decimals > 30) {
     throw new Error("Decimals must be between 0 and 30.");
   }
@@ -221,14 +216,7 @@ function App() {
     watch: true,
   });
 
-  const unitsPreview = useMemo(() => {
-    if (!form.amount.trim() || !form.decimals.trim()) return "0";
-    try {
-      return parseAmountToUnits(form.amount, form.decimals).toString();
-    } catch {
-      return "Invalid amount";
-    }
-  }, [form.amount, form.decimals]);
+  const effectiveDecimals = walletBalance.data?.decimals ?? DEFAULT_TOKEN_DECIMALS;
 
   const combinedError =
     validationError ?? (sendError ? formatError(sendError) : null);
@@ -321,7 +309,7 @@ function App() {
     try {
       const tokenAddress = normalizeAddress(form.tokenAddress);
       const recipientAddress = normalizeAddress(form.recipient);
-      const amount = parseAmountToUnits(form.amount, form.decimals);
+      const amount = parseAmountToUnits(form.amount, effectiveDecimals);
 
       if (amount <= 0n) {
         throw new Error("Amount must be greater than zero.");
@@ -362,7 +350,6 @@ function App() {
     setForm((current) => ({
       ...current,
       amount: formatUnitsForInput(units, balanceData.decimals),
-      decimals: String(balanceData.decimals),
     }));
   };
 
@@ -457,53 +444,37 @@ function App() {
               required
             />
           </label>
-          <div className="split">
-            <label className="amount-field">
-              <span className="field-head">
-                <span>Amount</span>
-                <span className="balance-pill">{balanceLabel}</span>
-              </span>
-              <input
-                value={form.amount}
-                onChange={onFieldChange("amount")}
-                placeholder="0.0"
-                autoComplete="off"
-                required
-              />
-              <span className="quick-actions">
-                <button
-                  className="chip-button"
-                  type="button"
-                  onClick={() => onFillPercent(50)}
-                  disabled={!walletBalance.data || walletBalance.data.value === 0n}
-                >
-                  50%
-                </button>
-                <button
-                  className="chip-button"
-                  type="button"
-                  onClick={() => onFillPercent(100)}
-                  disabled={!walletBalance.data || walletBalance.data.value === 0n}
-                >
-                  100%
-                </button>
-              </span>
-            </label>
-            <label>
-              Decimals
-              <input
-                value={form.decimals}
-                onChange={onFieldChange("decimals")}
-                placeholder="18"
-                autoComplete="off"
-                required
-              />
-            </label>
-          </div>
-
-          <p className="hint">
-            Smallest-unit preview: <span className="mono">{unitsPreview}</span>
-          </p>
+          <label className="amount-field">
+            <span className="field-head">
+              <span>Amount</span>
+              <span className="balance-pill">{balanceLabel}</span>
+            </span>
+            <input
+              value={form.amount}
+              onChange={onFieldChange("amount")}
+              placeholder="0.0"
+              autoComplete="off"
+              required
+            />
+            <span className="quick-actions">
+              <button
+                className="chip-button"
+                type="button"
+                onClick={() => onFillPercent(50)}
+                disabled={!walletBalance.data || walletBalance.data.value === 0n}
+              >
+                50%
+              </button>
+              <button
+                className="chip-button"
+                type="button"
+                onClick={() => onFillPercent(100)}
+                disabled={!walletBalance.data || walletBalance.data.value === 0n}
+              >
+                100%
+              </button>
+            </span>
+          </label>
 
           {combinedError ? <p className="hint error">{combinedError}</p> : null}
 
@@ -515,6 +486,14 @@ function App() {
             {isTransferPending ? "Sending..." : "Send Transfer"}
           </button>
         </form>
+
+        <section className="disclaimer-box">
+          <p className="disclaimer-title">DYOR</p>
+          <p>
+            Use at your own risk. Transactions are irreversible, token contracts
+            can be malicious, and no warranty is provided.
+          </p>
+        </section>
 
         {transactionHash ? (
           <section className="tx-card">
