@@ -10,14 +10,28 @@ import { CallData, cairo, type Call } from "starknet";
 import "./App.css";
 
 type TransferFormState = {
+  selectedToken: string;
   tokenAddress: string;
   recipient: string;
   amount: string;
   decimals: string;
 };
 
+const STRK_TOKEN_ADDRESS =
+  "0x04718f5a0fc34cc1af16a1cdee98ffb20c31f5cd61d6ab07201858f4287c938d";
+const SLAY_TOKEN_ADDRESS =
+  "0x02Ab526354a39E7f5D272f327FA94e757df3688188d4a92C6Dc3623Ab79894E2";
+
+const TOKENS = [
+  { key: "STRK", label: "STRK", address: STRK_TOKEN_ADDRESS },
+  { key: "SLAY", label: "SLAY", address: SLAY_TOKEN_ADDRESS },
+] as const;
+
+const CUSTOM_TOKEN_KEY = "CUSTOM";
+
 const TRANSFER_FORM_DEFAULTS: TransferFormState = {
-  tokenAddress: "",
+  selectedToken: "STRK",
+  tokenAddress: STRK_TOKEN_ADDRESS,
   recipient: "",
   amount: "",
   decimals: "18",
@@ -155,6 +169,14 @@ function App() {
     enabled: Boolean(transactionHash),
   });
 
+  const tokenAddressToKey = useMemo(() => {
+    const map = new Map<string, string>();
+    for (const token of TOKENS) {
+      map.set(token.address.toLowerCase(), token.key);
+    }
+    return map;
+  }, []);
+
   const controllerConnector = useMemo(
     () => connectors.find((current) => current.id === "controller"),
     [connectors],
@@ -175,8 +197,39 @@ function App() {
   const onFieldChange =
     (field: keyof TransferFormState) =>
     (event: ChangeEvent<HTMLInputElement>) => {
-      setForm((current) => ({ ...current, [field]: event.target.value }));
+      const value = event.target.value;
+      if (field === "tokenAddress") {
+        const normalizedKey = tokenAddressToKey.get(value.trim().toLowerCase());
+        setForm((current) => ({
+          ...current,
+          tokenAddress: value,
+          selectedToken: normalizedKey ?? CUSTOM_TOKEN_KEY,
+        }));
+        return;
+      }
+
+      setForm((current) => ({ ...current, [field]: value }));
     };
+
+  const onTokenChange = (event: ChangeEvent<HTMLSelectElement>) => {
+    const selectedToken = event.target.value;
+    if (selectedToken === CUSTOM_TOKEN_KEY) {
+      setForm((current) => ({
+        ...current,
+        selectedToken: CUSTOM_TOKEN_KEY,
+      }));
+      return;
+    }
+
+    const selected = TOKENS.find((token) => token.key === selectedToken);
+    if (!selected) return;
+
+    setForm((current) => ({
+      ...current,
+      selectedToken: selected.key,
+      tokenAddress: selected.address,
+    }));
+  };
 
   const onConnect = () => {
     setValidationError(null);
@@ -296,6 +349,17 @@ function App() {
         </section>
 
         <form className="transfer-form" onSubmit={onSubmitTransfer}>
+          <label>
+            Token
+            <select value={form.selectedToken} onChange={onTokenChange}>
+              {TOKENS.map((token) => (
+                <option key={token.key} value={token.key}>
+                  {token.label}
+                </option>
+              ))}
+              <option value={CUSTOM_TOKEN_KEY}>Custom</option>
+            </select>
+          </label>
           <label>
             Token Address
             <input

@@ -105,7 +105,8 @@
   gap: 0.45rem;
 }
 
-input {
+input,
+select {
   background: rgba(7, 23, 25, 0.72);
   border: 1px solid rgba(129, 204, 193, 0.35);
   border-radius: 10px;
@@ -115,7 +116,8 @@ input {
   padding: 0.68rem 0.72rem;
 }
 
-input:focus {
+input:focus,
+select:focus {
   border-color: rgba(121, 238, 203, 0.82);
   box-shadow: 0 0 0 3px rgba(113, 223, 190, 0.2);
 }

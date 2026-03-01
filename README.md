@@ -3,7 +3,7 @@
 A small web app that lets anyone:
 
 - connect their own Cartridge account
-- send ERC-20 token transfers on Starknet mainnet
+- send ERC-20 token transfers on Starknet mainnet (with STRK/SLAY quick-select)
 - track transaction status and open the tx in Starkscan
 
 ## Stack
