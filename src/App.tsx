@@ -87,8 +87,30 @@ function extractTxHash(result: unknown): string | null {
 }
 
 function formatError(error: unknown): string {
-  if (error instanceof Error) return error.message;
   if (typeof error === "string") return error;
+  if (error instanceof Error) {
+    const fromCause = formatError((error as { cause?: unknown }).cause);
+    if (fromCause !== "Unexpected error.") {
+      return `${error.message}: ${fromCause}`;
+    }
+    return error.message;
+  }
+  if (error && typeof error === "object") {
+    const record = error as Record<string, unknown>;
+    const candidateKeys = [
+      "shortMessage",
+      "message",
+      "reason",
+      "details",
+      "error",
+      "data",
+      "cause",
+    ];
+    for (const key of candidateKeys) {
+      const candidate = formatError(record[key]);
+      if (candidate !== "Unexpected error.") return candidate;
+    }
+  }
   return "Unexpected error.";
 }
 
@@ -195,13 +217,16 @@ function App() {
         throw new Error("Amount must be greater than zero.");
       }
 
+      const amountU256 = cairo.uint256(amount);
       const transferCall: Call = {
         contractAddress: tokenAddress,
         entrypoint: "transfer",
-        calldata: CallData.compile({
-          recipient: recipientAddress,
-          amount: cairo.uint256(amount),
-        }),
+        // Positional calldata avoids ABI parameter name mismatches across tokens.
+        calldata: CallData.compile([
+          recipientAddress,
+          amountU256.low,
+          amountU256.high,
+        ]),
       };
 
       const result = await sendAsync([transferCall]);

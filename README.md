@@ -30,11 +30,11 @@ Create `.env` from `.env.example`.
 cp .env.example .env
 ```
 
-- `VITE_MAINNET_RPC_URL`: optional Starknet mainnet RPC URL
+- `VITE_MAINNET_RPC_URL`: optional Starknet mainnet RPC URL override
 - `VITE_CARTRIDGE_SLOT`: optional Cartridge slot project name
 - `VITE_CARTRIDGE_NAMESPACE`: optional namespace for Cartridge profile features
 
-If omitted, the app uses `https://rpc.starknet.lava.build`.
+If `VITE_MAINNET_RPC_URL` is omitted, the app uses Cartridge's default mainnet routing.
 
 ## Build
 
