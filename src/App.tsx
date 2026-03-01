@@ -222,14 +222,16 @@ function App() {
     validationError ?? (sendError ? formatError(sendError) : null);
 
   const balanceLabel = useMemo(() => {
-    if (!isConnected) return "Balance: connect wallet";
-    if (!isTokenAddressValid) return "Balance: invalid token address";
+    if (!isConnected) return "Balance (poor mf): connect wallet";
+    if (!isTokenAddressValid) return "Balance (poor mf): invalid token address";
     if (walletBalance.isPending || walletBalance.isFetching) {
-      return "Balance: loading...";
+      return "Balance (poor mf): loading...";
     }
-    if (walletBalance.isError || !walletBalance.data) return "Balance: unavailable";
+    if (walletBalance.isError || !walletBalance.data) {
+      return "Balance (poor mf): unavailable";
+    }
 
-    return `Balance: ${clampDisplayAmount(walletBalance.data.formatted)} ${walletBalance.data.symbol}`;
+    return `Balance (poor mf): ${clampDisplayAmount(walletBalance.data.formatted)} ${walletBalance.data.symbol}`;
   }, [
     isConnected,
     isTokenAddressValid,
