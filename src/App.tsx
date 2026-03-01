@@ -489,12 +489,34 @@ function App() {
           </button>
         </form>
 
-        <section className="disclaimer-box">
-          <p className="disclaimer-title">DYOR</p>
-          <p>
-            Use at your own risk. Transactions are irreversible, token contracts
-            can be malicious, and no warranty is provided.
-          </p>
+        <section className="disclaimer-widget" aria-label="Risk Disclaimer">
+          <div className="disclaimer-widget-titlebar">
+            <span className="disclaimer-widget-title">RISK.EXE</span>
+            <span className="disclaimer-widget-lights" aria-hidden="true">
+              ● ● ●
+            </span>
+          </div>
+          <div className="disclaimer-widget-body">
+            <div className="retro-counter-row">
+              <span className="retro-warning blink">WARNING</span>
+              <span className="retro-counter" aria-hidden="true">
+                <span>0</span>
+                <span>0</span>
+                <span>9</span>
+                <span>0</span>
+                <span>0</span>
+              </span>
+            </div>
+            <p className="retro-disclaimer-copy">
+              DYOR. USE AT YOUR OWN RISK. TRANSACTIONS ARE IRREVERSIBLE.
+            </p>
+            <div className="retro-ticker" aria-hidden="true">
+              <span>
+                DYOR // NO GUARANTEES // MALICIOUS TOKENS EXIST // CHECK
+                RECIPIENTS TWICE //
+              </span>
+            </div>
+          </div>
         </section>
 
         {transactionHash ? (
