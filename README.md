@@ -43,6 +43,12 @@ npm run build
 npm run preview
 ```
 
+## Published Website
+
+After GitHub Actions deploys, the site is available at:
+
+`https://welttowelt.github.io/scrollsage-cartridge-web-tool/`
+
 ## Notes
 
 - This tool sends transactions from the user wallet only.
